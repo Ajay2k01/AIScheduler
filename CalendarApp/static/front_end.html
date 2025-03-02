@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar App</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+    <h1>Dynamic Calendar</h1>
+    
+    <label for="year">Year:</label>
+    <input type="number" id="year" value="2023">
+
+    <label for="month">Month:</label>
+    <input type="number" id="month" value="1" min="1" max="12">
+
+
+    <button onclick="fetchCalendar()">Get Calendar</button>
+
+    <div id="calendar-container"></div>
+
+    <h1>Create an Event</h1>
+
+    <label for="title">Title:</label>
+    <input type="text" id="title" placeholder="Enter event title">
+
+    <label for="description">Description:</label>
+    <input type="text" id="description" placeholder="Enter event description">
+
+
+    <button onclick="updateCalendar()">update Calendar</button>
+
+
+    <div id="updated-calendar-container"></div>
+
+    <h2>All Events</h2>
+    <div id="event-list"></div>
+
+
+    <script>
+        function fetchCalendar() {
+            let year = document.getElementById('year').value;
+            let month = document.getElementById('month').value;
+
+            $.get('/get-calendar/', { year: year, month: month }, function(data) {
+                $('#calendar-container').html(data.calendar);
+            });
+        }
+
+        function updateCalendar() {
+            let title = document.getElementById('title').value;
+            let desc = document.getElementById('description').value;
+            console.log(title,desc)
+
+            $.get('/create-event/', { title: title, description: desc }, function(response) {
+                alert("Successresp: "+response);  // Show a success message
+                console.log('Successfully created')
+                fetchEvents();  // Refresh the event list
+                console.log('Fetching events')
+            }).fail(function(error) {
+                alert("Error: " + error.responseText);
+            });
+        }
+
+        function fetchEvents() {
+            $.get('/list-events/', function(data) {
+                console.log("Data", data)
+                let eventsHtml = "<ul>";
+                data.events.forEach(event => {
+                    eventsHtml += `<li>${event.title} - ${event.description} (${event.date})</li>`;
+                });
+                eventsHtml += "</ul>";
+
+                document.getElementById('event-list').innerHTML = eventsHtml;
+            });
+        }
+
+        // Fetch events on page load
+        fetchEvents();
+    </script>
+
+</body>
+</html>
